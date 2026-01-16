@@ -994,3 +994,208 @@ tbody tr:hover {
 .hidden {
   display: none !important;
 }
+
+/* Action buttons container */
+.action-buttons {
+  display: flex;
+  /* arrange buttons in a row */
+  gap: 8px;
+  /* spacing between buttons */
+  justify-content: center;
+  /* center buttons horizontally */
+  align-items: center;
+  /* align vertically */
+  padding: 4px 0;
+}
+
+/* General button style inside action-buttons */
+.action-buttons .btn-action {
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  color: #fff;
+}
+
+/* Specific button colors */
+.action-buttons .btn-info {
+  background-color: #3498db;
+  /* blue */
+}
+
+.action-buttons .btn-info:hover {
+  background-color: #2980b9;
+}
+
+.action-buttons .btn-edit {
+  background-color: #f39c12;
+  /* orange */
+}
+
+.action-buttons .btn-edit:hover {
+  background-color: #d68910;
+}
+
+.action-buttons .btn-delete {
+  background-color: #e74c3c;
+  /* red */
+}
+
+.action-buttons .btn-delete:hover {
+  background-color: #c0392b;
+}
+
+/* Optional: subtle shadow for all buttons */
+.action-buttons .btn-action:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.complaints-panel {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.complaints-list {
+  list-style: none;
+  padding: 0;
+}
+
+.complaints-list li {
+  margin-bottom: 12px;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Modal background */
+.modal {
+  display: none;
+  /* hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  /* enable scroll if needed */
+  background-color: rgba(0, 0, 0, 0.5);
+  /* semi-transparent backdrop */
+}
+
+/* Modal content box */
+.modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 6px;
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease;
+}
+
+/* Close button */
+.close-btn {
+  float: right;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #888;
+}
+
+.close-btn:hover {
+  color: #e74c3c;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background: #fff;
+  margin: 8% auto;
+  padding: 20px;
+  border-radius: 6px;
+  width: 80%;
+  max-width: 500px;
+}
+
+.close-btn {
+  float: right;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.archived-list {
+  list-style: none;
+  padding: 0;
+}
+
+.archived-list li {
+  margin-bottom: 15px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #f9f9f9;
+}
+
+.archived-list h4 {
+  margin: 0 0 5px;
+}
+
+.archived-list hr {
+  margin: 10px 0;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #fff;
+  padding: 20px;
+  width: 400px;
+  border-radius: 8px;
+  position: relative;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  cursor: pointer;
+  font-size: 20px;
+}

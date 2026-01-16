@@ -19,6 +19,52 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
+function deletePatient(patientId) {
+    if (!confirm("Are you sure you want to delete this patient?")) {
+        return;
+    }
+
+    showLoading();
+
+    const formData = new FormData();
+    formData.append("patient_id", patientId);
+
+    fetch("/patients/delete/", {
+        method: "POST",
+        body: formData,
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`Server error: ${res.status}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        if (data.status === "success") {
+            showNotification(data.message, "success");
+
+            // Remove row from table
+            const row = document.querySelector(`tr[data-patient-id="${patientId}"]`);
+            if (row) {
+                row.remove();
+            }
+        } else {
+            showNotification(data.message || "Failed to delete patient", "error");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error deleting patient", "error");
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
 function loadPatientTable() {
     fetch('/patients/api/')
         .then(res => res.json())
@@ -55,8 +101,9 @@ function loadPatientTable() {
                     <td>${p.weight}</td>
                     <td>${p.height}</td>
                     <td class="action-buttons">
-                        <button onclick="showComplaints('${p.patient_id}')" class="btn-action btn-info">📄 Complaints</button>
-                        <button onclick="updatePatient('${p.patient_id}')" class="btn-action btn-edit">✏️ Update</button>
+                        <button onclick="openComplaintsModal('${p.patient_id}')" class="btn-action btn-info">📄 Complaints</button>
+                        <button onclick="update_this_Patient('${p.patient_id}')" class="btn-action btn-edit">✏️ Update</button>
+                        <button onclick="deletePatient('${ p.patient_id }')" class="btn-action btn-delete">🗑️ Delete</button>
                     </td>
                 `;
 
@@ -71,6 +118,86 @@ function loadPatientTable() {
         })
         .catch(err => console.error('Failed to load patients:', err));
 }
+
+function update_this_Patient(patientId) {
+    showLoading();
+    fetch(`/patients/api/`)
+    .then(res => res.json())
+    .then(data => {
+        const patient = data.patients.find(p => p.patient_id === patientId);
+        if (!patient) {
+            showNotification("Patient not found", "error");
+            return;
+        }
+
+        // Populate modal fields
+        document.getElementById("modal_patient_id").value = patient.patient_id;
+        document.getElementById("modal_firstname").value = patient.firstname;
+        document.getElementById("modal_middlename").value = patient.middlename || "";
+        document.getElementById("modal_lastname").value = patient.lastname;
+        document.getElementById("modal_contact_number").value = patient.contact_number;
+        document.getElementById("modal_birthdate").value = patient.birthdate;
+        document.getElementById("modal_age").value = patient.age;
+        document.getElementById("modal_gender").value = patient.gender;
+        document.getElementById("modal_address").value = patient.address;
+
+        // Profile image preview
+        document.getElementById("modal_profile_preview").src = patient.profile_image;
+
+        // Show modal
+        document.getElementById("patientModal").style.display = "flex";
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error loading patient data", "error");
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
+function previewProfileImage(event) {
+    const reader = new FileReader();
+    reader.onload = function(){
+        document.getElementById("modal_profile_preview").src = reader.result;
+    };
+    reader.readAsDataURL(event.target.files[0]);
+}
+
+function submitPatientUpdate() {
+    showLoading(); // show loading right away
+    const form = document.getElementById("updatePatientForm");
+    const formData = new FormData(form);
+
+    fetch(`/patients/update/`, {
+        method: "POST",
+        headers: {
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            showNotification("Patient updated successfully!", "success");
+            closePatientModal();
+        } else {
+            showNotification(data.message || "Update failed", "error");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error updating patient", "error");
+    })
+    .finally(() => {
+        hideLoading(); // hide loading only after request completes
+    });
+}
+
+function closePatientModal() {
+    document.getElementById("patientModal").style.display = "none";
+}
+
 
 // Load table on page load
 document.addEventListener('DOMContentLoaded', loadPatientTable);
@@ -116,8 +243,10 @@ function showView(viewName) {
     const titles = {
         'add-patient': 'Dashboard',
         'complaints': 'Patient Complaints',
-        'list': 'Patient List'
+        'list': 'Patient List',
+        'archived': 'Archived Complaints'
     };
+    
     document.getElementById('pageTitle').textContent = titles[viewName] || 'Dashboard';
     
     // Close sidebar on mobile
@@ -132,7 +261,105 @@ function showView(viewName) {
     if (viewName === 'list') {
         initializeTable();
     }
+
+    if (viewName === 'archived') {
+        showArchived();
+    }
 }
+
+function showArchived() {
+    showLoading();
+
+    fetch(`/archived/`, {
+        method: "GET",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const archivedDiv = document.getElementById("archivedContent");
+        archivedDiv.innerHTML = "";
+
+        console.log("Archives array:", data.archives);
+
+        if (!data.archives || data.archives.length === 0) {
+            archivedDiv.innerHTML = "<p>No archived complaints available.</p>";
+        } else {
+            const list = document.createElement("ul");
+            list.classList.add("archived-list");
+
+            data.archives.forEach(a => {
+                const item = document.createElement("li");
+                item.innerHTML = `
+                <div class="box_Holder">
+                    <div class="patient_card">
+                        <div class="img-card">
+                            <img src="${a.profile_image || '/static/img/default.png'}" alt="Profile" class="profile-thumb">
+                        </div>
+                        <div class="info-box">
+                            <h4>Patient: ${a.firstname} ${a.lastname} (${a.patient_id})</h4>
+                            <p><em>Gender:</em> ${a.gender}, <em>Age:</em> ${a.age}</p>
+                            <p><em>Address:</em> ${a.address}</p>
+                        </div>
+                    </div>
+                    <div class="complaint-card">
+                        <strong>COMPLAINT: ${a.chief_complaint}</strong><br>
+                        <em>Lab:</em> ${a.lab_examination || "N/A"}<br>
+                        <em>Result:</em> ${a.test_result || "N/A"}<br>
+                        <em>Diagnosis:</em> ${a.final_diagnosis || "N/A"}<br>
+                        <em>Treatment:</em> ${a.treatment || "N/A"}<br>
+                        <small>Archived On: ${new Date(a.date_created).toLocaleString()}</small><br>
+                        <div class="action-btn">
+                            <button onclick="exportArchivedToPDF(${a.id})" class="btn-action btn-info">📄 Export to PDF</button>
+                            <button onclick="deleteArchived(${a.id})" class="btn-action btn-danger">🗑️ Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+                list.appendChild(item);
+            });
+
+            archivedDiv.appendChild(list);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error loading archived complaints", "error");
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
+function deleteArchived(archiveId) {
+    showLoading();
+
+    fetch(`/archived/${archiveId}/delete/`, {
+        method: "POST",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            showNotification(data.message, "success");
+            // Optionally refresh archived list
+            showArchived();
+        } else {
+            showNotification(data.message, "error");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error deleting archived complaint", "error");
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
 
 // ===== DROPDOWN FUNCTIONS =====
 function toggleDropdown() {
@@ -265,6 +492,7 @@ document.getElementById('complaintForm').addEventListener('submit', function(e) 
     const patientIdInput = document.getElementById('verifyPatientId');
     if (!patientIdInput.value.trim()) {
         showNotification('Please enter a Patient ID first', 'error');
+        hideLoading();
         return;
     }
     formData.append('patient_id', patientIdInput.value.trim());
@@ -277,23 +505,36 @@ document.getElementById('complaintForm').addEventListener('submit', function(e) 
             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
         }
     })
-    .then(res => res.json())
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`Server error: ${res.status}`);
+        }
+        return res.json();
+    })
     .then(data => {
-        if (data.success) {
+        if (data.status === "success") {
             showNotification('Complaint recorded successfully!', 'success');
             
             // Optional: reset form after submission
             form.reset();
-            document.getElementById('complaintPatientPreview').src = '/static/images/default-avatar.png';
+
+            const previewImg = document.getElementById('complaintPatientPreview');
+            if (previewImg) {
+                previewImg.src = '/static/images/default-avatar.png';
+            }
+            
+            // Refresh patient table
+            loadPatientTable();
         } else {
             showNotification(data.error || 'Failed to save complaint', 'error');
         }
-        hideLoading();
-        loadPatientTable();
     })
     .catch(err => {
         console.error(err);
         showNotification('Error saving complaint', 'error');
+    })
+    .finally(() => {
+        hideLoading();
     });
 });
 
@@ -488,10 +729,329 @@ function nextPage() {
     }
 }
 
+function openComplaintsModal(patientId) {
+    const modal = document.getElementById("complaintsModal");
+    modal.style.display = "block";   // show modal
+    showComplaints(patientId);       // load complaints for that patient
+}
+
+function closeComplaintsModal() {
+    const modal = document.getElementById("complaintsModal");
+    modal.style.display = "none";    // hide modal
+}
+
 function showComplaints(patientId) {
-    showView('complaints');
-    document.getElementById('verifyPatientId').value = patientId;
-    verifyPatient();
+    showLoading();
+
+    fetch(`/patients/${patientId}/complaints/`, {
+        method: "GET",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        const complaintsDiv = document.getElementById("complaintsContent");
+        complaintsDiv.innerHTML = "";
+    
+        // Show patient info once at top
+        const patientInfo = `
+            <h4>Patient: ${data.patient.firstname} ${data.patient.lastname} (${data.patient.patient_id})</h4>
+            <p><em>Gender:</em> ${data.patient.gender}, <em>Age:</em> ${data.patient.age}</p>
+            <p><em>Address:</em> ${data.patient.address}</p>
+            <hr>
+        `;
+        complaintsDiv.innerHTML = patientInfo;
+    
+        if (data.complaints.length === 0) {
+            complaintsDiv.innerHTML += "<p>No complaints recorded for this patient.</p>";
+        } else {
+            const list = document.createElement("ul");
+            list.classList.add("complaints-list");
+    
+            data.complaints.forEach(c => {
+                const item = document.createElement("li");
+                let actionButton = "";
+
+                if (c.is_archived) {
+                    actionButton = `<button onclick="exportComplaintToPDF(${c.id})" class="btn-action btn-info">📄 Export to PDF</button>`;
+                } else {
+                    actionButton = `<button id="archive-btn-${c.id}" onclick="archiveComplaint(${c.id})" class="btn-action btn-info">📦 Archive</button>`;
+                }
+                
+                item.innerHTML = `
+                    <strong>${c.chief_complaint}</strong><br>
+                    <em>Lab:</em> ${c.lab_examination || "N/A"}<br>
+                    <em>Result:</em> ${c.test_result || "N/A"}<br>
+                    <em>Diagnosis:</em> ${c.final_diagnosis || "N/A"}<br>
+                    <em>Treatment:</em> ${c.treatment || "N/A"}<br>
+                    <small>Date: ${new Date(c.date_created).toLocaleString()}</small><br>
+                    <button onclick="editComplaint(${c.id})" class="btn-action btn-edit">✏️ Edit</button>
+                    <button onclick="deleteComplaint(${c.id})" class="btn-action btn-delete">🗑️ Delete</button>
+                    ${actionButton}
+                `;
+                list.appendChild(item);
+            });
+            
+            complaintsDiv.appendChild(list);
+        }
+    })    
+    .catch(err => {
+        console.error(err);
+        showNotification("Error loading complaints", "error");
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
+function exportComplaintToPDF(complaintId) {
+    showLoading();
+    
+    fetch(`/complaints/${complaintId}/export/pdf/`, {
+        method: "GET",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        return res.blob(); // PDF comes back as a blob
+    })
+    .then(blob => {
+        // Create a temporary download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `complaint_${complaintId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+        showNotification("Complaint exported to PDF successfully!", "success");
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error exporting complaint to PDF", "error");
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
+function archiveComplaint(complaintId) {
+    showLoading();
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+    if (!csrfToken) {
+        showNotification("CSRF token missing", "error");
+        hideLoading();
+        return;
+    }
+
+    const btn = document.getElementById(`archive-btn-${complaintId}`);
+    if (btn) btn.disabled = true;
+
+    fetch(`/complaints/${complaintId}/archive/`, {
+        method: "POST",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": csrfToken.value
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            showNotification("Complaint archived successfully!", "success");
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "📄 Export to PDF";
+                btn.onclick = function() {
+                    exportComplaintToPDF(complaintId);
+                };
+            }
+        } else {
+            showNotification(data.error || "Failed to archive complaint", "error");
+            if (btn) btn.disabled = false;
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error archiving complaint", "error");
+        if (btn) btn.disabled = false;
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
+function exportArchivedToPDF(archiveId) {
+    showLoading();
+
+    fetch(`/archived/${archiveId}/export/pdf/`, {
+        method: "GET",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest"
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error(`Server error: ${res.status}`);
+        return res.blob(); // PDF comes back as a blob
+    })
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `archive_${archiveId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+        showNotification("Archived complaint exported to PDF successfully!", "success");
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error exporting archived complaint to PDF", "error");
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
+function deleteArchived(archiveId) {
+    if (!confirm("Are you sure you want to delete this archived complaint?")) return;
+
+    showLoading();
+
+    fetch(`/archived/${archiveId}/delete/`, {
+        method: "POST",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            showNotification(data.message, "success");
+            // Refresh archived list
+            showArchived();
+        } else {
+            showNotification(data.message || "Failed to delete archived complaint", "error");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error deleting archived complaint", "error");
+    })
+    .finally(() => {
+        hideLoading();
+    });
+}
+
+// Optional: close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById("complaintsModal");
+    if (event.target === modal) {
+        modal.style.display = "none";
+    }
+}
+
+// Delete complaint
+function deleteComplaint(complaintId) {
+    if (!confirm("Are you sure you want to delete this complaint?")) return;
+
+    fetch(`/complaints/${complaintId}/delete/`, {
+        method: "POST",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            showNotification("Complaint deleted successfully!", "success");
+            // Refresh complaints list
+            showComplaints(data.patient_id);
+        } else {
+            showNotification(data.error || "Failed to delete complaint", "error");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error deleting complaint", "error");
+    });
+}
+
+// Edit complaint (loads into form)
+function editComplaint(complaintId) {
+    fetch(`/complaints/${complaintId}/json/`, {
+        method: "GET",
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(res => res.json())
+    .then(data => {
+        // Fill edit form fields with complaint data
+        document.getElementById("edit_complaint_id").value = data.id;
+        document.getElementById("edit_chief_complaint").value = data.chief_complaint || "";
+        document.getElementById("edit_lab_examination").value = data.lab_examination || "";
+        document.getElementById("edit_test_result").value = data.test_result || "";
+        document.getElementById("edit_final_diagnosis").value = data.final_diagnosis || "";
+        document.getElementById("edit_treatment").value = data.treatment || "";
+
+        // Show modal
+        document.getElementById("editComplaintModal").style.display = "block";
+        showNotification("Editing complaint record", "info");
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error loading complaint for edit", "error");
+    });
+}
+
+function closeEditComplaintModal() {
+    document.getElementById("editComplaintModal").style.display = "none";
+}
+
+document.getElementById("editComplaintForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    showLoading();
+
+    const formData = new FormData(this);
+
+    fetch("/complaints/update/", {
+        method: "POST",
+        body: formData,
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            showNotification("Complaint updated successfully!", "success");
+            closeEditComplaintModal();
+            // Refresh complaints list for the patient
+            showComplaints(data.patient_id);
+        } else {
+            showNotification(data.error || "Failed to update complaint", "error");
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        showNotification("Error updating complaint", "error");
+    })
+    .finally(() => {
+        hideLoading();
+    });
+});
+
+// Export complaints to PDF
+function exportComplaintsToPDF() {
+    window.location.href = "/export/complaints/pdf/";
 }
 
 // ===== UPDATE PATIENT FORM =====
@@ -505,6 +1065,7 @@ function updatePatient(patientId) {
     const form = document.getElementById('addPatientForm');
 
     // Fill the form using dataset
+    form.profile_image.value = row.dataset.profileImage;
     form.patient_id.value = row.dataset.patientId;
     form.firstname.value = row.dataset.firstname;
     form.middlename.value = row.dataset.middlename || '';

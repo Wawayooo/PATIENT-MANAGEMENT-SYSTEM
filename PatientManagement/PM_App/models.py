@@ -55,3 +55,30 @@ class Complaint(models.Model):
     def __str__(self):
         return f"Complaint for {self.patient.patient_id} - {self.chief_complaint}"
 
+class PatientComplaintArchive(models.Model):
+    complaint = models.OneToOneField("Complaint", on_delete=models.SET_NULL, related_name="archive", null=True, blank=True)
+
+    patient_id = models.CharField(max_length=20)
+    firstname = models.CharField(max_length=100)
+    middlename = models.CharField(max_length=100, null=True, blank=True)
+    lastname = models.CharField(max_length=100)
+    address = models.TextField()
+    birthdate = models.DateField()
+    age = models.IntegerField()
+    gender = models.CharField(max_length=10)
+    contact_number = models.CharField(max_length=15)
+    blood_pressure = models.CharField(max_length=10, null=True, blank=True)
+    weight = models.FloatField(null=True, blank=True)
+    height = models.FloatField(null=True, blank=True)
+    profile_image = models.CharField(max_length=255, null=True, blank=True)
+
+    chief_complaint = models.TextField()
+    lab_examination = models.TextField(null=True, blank=True)
+    test_result = models.TextField(null=True, blank=True)
+    final_diagnosis = models.TextField(null=True, blank=True)
+    treatment = models.TextField(null=True, blank=True)
+
+    date_created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Archive: {self.patient_id} - {self.chief_complaint}"

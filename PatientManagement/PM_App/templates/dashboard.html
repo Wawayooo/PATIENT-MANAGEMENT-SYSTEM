@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Management Dashboard</title>
     <link rel="stylesheet" href="{% static 'styles/dash.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/aesth.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/others.css' %}">
 </head>
 <body>
     <div class="burger" onclick="toggleSidebar()">☰</div>
@@ -20,16 +22,20 @@
         <nav class="sidebar-nav">
             <a href="#" onclick="showView('add-patient')" class="nav-link active" data-view="add-patient">
                 <span class="nav-icon">📋</span>
-                <span>Dashboard (Add Patient)</span>
+                <span>Dashboard</span>
             </a>
             <a href="#" onclick="showView('complaints')" class="nav-link" data-view="complaints">
                 <span class="nav-icon">📝</span>
-                <span>Record Patient Complaints</span>
+                <span>Complaints</span>
             </a>
             <a href="#" onclick="showView('list')" class="nav-link" data-view="list">
                 <span class="nav-icon">📊</span>
-                <span>Patient List</span>
+                <span>Patient and Complaint Data</span>
             </a>
+            <a href="#" onclick="showView('archived')" class="nav-link" data-view="archived">
+                <span class="nav-icon">📊</span>
+                <span>Archived</span>
+            </a>            
             <a href="{% url 'logout' %}" class="nav-link logout-link" id="logoutLink">
                 <span class="nav-icon">🚪</span>
                 <span>Logout</span>
@@ -164,7 +170,6 @@
             <div class="view-section" id="complaints-view">
                 <div class="card">
                     <div class="card-header">
-                        <h2>PATIENT/COMPLAINTS</h2>
                         <p>Record patient complaints and medical observations</p>
                     </div>
                     <form id="complaintForm" method="post">
@@ -269,10 +274,48 @@
                 </div>
             </div>
 
+            <!-- Complaints Modal -->
+            <div id="complaintsModal" class="modal">
+                <div class="modal-content">
+                <span class="close-btn" onclick="closeComplaintsModal()">&times;</span>
+                <h3>Patient Complaints</h3>
+                <div id="complaintsContent">
+                    <p>Select a patient to view complaints.</p>
+                </div>
+                </div>
+            </div>
+
+                        <!-- Edit Complaint Modal -->
+            <div id="editComplaintModal" class="modal">
+                <div class="modal-content">
+                <span class="close-btn" onclick="closeEditComplaintModal()">&times;</span>
+                <h3>Edit Complaint</h3>
+                <form id="editComplaintForm">
+                    <input type="hidden" name="complaint_id" id="edit_complaint_id">
+            
+                    <label for="edit_chief_complaint">Chief Complaint</label>
+                    <textarea id="edit_chief_complaint" name="chief_complaint" required></textarea>
+            
+                    <label for="edit_lab_examination">Lab Examination</label>
+                    <textarea id="edit_lab_examination" name="lab_examination"></textarea>
+            
+                    <label for="edit_test_result">Test Result</label>
+                    <textarea id="edit_test_result" name="test_result"></textarea>
+            
+                    <label for="edit_final_diagnosis">Final Diagnosis</label>
+                    <textarea id="edit_final_diagnosis" name="final_diagnosis"></textarea>
+            
+                    <label for="edit_treatment">Treatment</label>
+                    <textarea id="edit_treatment" name="treatment"></textarea>
+            
+                    <button type="submit" class="btn-action btn-edit">💾 Save Changes</button>
+                </form>
+                </div>
+            </div>
+
             <div class="view-section" id="list-view">
                 <div class="card">
                     <div class="card-header">
-                        <h2>Patient List</h2>
                         <p>View and manage all registered patients</p>
                     </div>
 
@@ -310,35 +353,7 @@
                           </thead>
                           <tbody>
                               {% for patient in patients %}
-                              <tr 
-                                    data-patient-id="{{ patient.patient_id }}"
-                                    data-firstname="{{ patient.firstname }}"
-                                    data-middlename="{{ patient.middlename|default:'' }}"
-                                    data-lastname="{{ patient.lastname }}"
-                                    data-birthdate="{{ patient.birthdate }}"
-                                    data-age="{{ patient.age }}"
-                                    data-gender="{{ patient.gender }}"
-                                    data-address="{{ patient.address }}"
-                                    data-contact-number="{{ patient.contact_number }}"
-                                    data-blood-pressure="{{ patient.blood_pressure }}"
-                                    data-weight="{{ patient.weight }}"
-                                    data-height="{{ patient.height }}"
-                                >
-                                    <td>{{ patient.patient_id }}</td>
-                                    <td>{{ patient.contact_number }}</td>
-                                    <td>{{ patient.firstname }} {{ patient.middlename|default:'' }} {{ patient.lastname }}</td>
-                                    <td>{{ patient.birthdate }}</td>
-                                    <td>{{ patient.age }}</td>
-                                    <td>{{ patient.gender }}</td>
-                                    <td>{{ patient.address }}</td>
-                                    <td>{{ patient.blood_pressure }}</td>
-                                    <td>{{ patient.weight }}</td>
-                                    <td>{{ patient.height }}</td>
-                                    <td class="action-buttons">
-                                        <button onclick="showComplaints('{{ patient.patient_id }}')" class="btn-action btn-info">📄 Complaints</button>
-                                        <button onclick="updatePatient('{{ patient.patient_id }}')" class="btn-action btn-edit">✏️ Update</button>
-                                    </td>
-                                </tr>
+                              
                               {% endfor %}
                           </tbody>
                       </table>
@@ -362,6 +377,63 @@
                 </div>
             </div>
 
+            <div id="archived-view" class="view-section">
+                <div id="archivedContent"></div>
+            </div>     
+            
+            <div id="globalLoadingModal" class="loading-modal">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <p>Processing... Please wait</p>
+                </div>
+            </div>
+
+            <div id="patientModal" class="modal" style="display:none;">
+                <div class="modal-content">
+                    <span class="close-btn" onclick="closePatientModal()">×</span>
+                    <h3>Update Patient Profile</h3>
+                    <form id="updatePatientForm" enctype="multipart/form-data">
+                    <input type="hidden" name="patient_id" id="modal_patient_id">
+
+                    <!-- Profile Image Preview -->
+                    <div class="profile-image-box">
+                        <img id="modal_profile_preview" src="/static/img/default.png" alt="Profile" class="profile-thumb-large">
+                    </div>
+
+                    <label>Change Profile Image:</label>
+                    <input type="file" name="profile_image" id="modal_profile_image" accept="image/*" onchange="previewProfileImage(event)">
+
+                    <label>First Name:</label>
+                    <input type="text" name="firstname" id="modal_firstname">
+
+                    <label>Middle Name:</label>
+                    <input type="text" name="middlename" id="modal_middlename">
+
+                    <label>Last Name:</label>
+                    <input type="text" name="lastname" id="modal_lastname">
+
+                    <label>Contact Number:</label>
+                    <input type="text" name="contact_number" id="modal_contact_number">
+
+                    <label>Birthdate:</label>
+                    <input type="date" name="birthdate" id="modal_birthdate">
+
+                    <label>Age:</label>
+                    <input type="number" name="age" id="modal_age">
+
+                    <label>Gender:</label>
+                    <select name="gender" id="modal_gender">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+
+                    <label>Address:</label>
+                    <textarea name="address" id="modal_address"></textarea>
+
+                    <button type="button" onclick="submitPatientUpdate()">💾 Save</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -408,13 +480,6 @@
                     </button>
                 </div>
             </form>
-        </div>
-    </div>
-    
-    <div id="globalLoadingModal" class="loading-modal">
-        <div class="loading-content">
-            <div class="spinner"></div>
-            <p>Processing... Please wait</p>
         </div>
     </div>
 
