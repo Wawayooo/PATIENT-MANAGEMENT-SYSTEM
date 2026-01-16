@@ -1,0 +1,456 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Management Dashboard</title>
+    <link rel="stylesheet" href="{% static 'styles/dash.css' %}">
+</head>
+<body>
+    <div class="burger" onclick="toggleSidebar()">☰</div>
+
+    <div class="sidebar hidden" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <div class="logo-icon">🏥</div>
+                <h2>Patient Portal</h2>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" onclick="showView('add-patient')" class="nav-link active" data-view="add-patient">
+                <span class="nav-icon">📋</span>
+                <span>Dashboard (Add Patient)</span>
+            </a>
+            <a href="#" onclick="showView('complaints')" class="nav-link" data-view="complaints">
+                <span class="nav-icon">📝</span>
+                <span>Record Patient Complaints</span>
+            </a>
+            <a href="#" onclick="showView('list')" class="nav-link" data-view="list">
+                <span class="nav-icon">📊</span>
+                <span>Patient List</span>
+            </a>
+            <a href="{% url 'logout' %}" class="nav-link logout-link" id="logoutLink">
+                <span class="nav-icon">🚪</span>
+                <span>Logout</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="topbar">
+            <div class="topbar-title">
+                <h1 id="pageTitle">Dashboard</h1>
+            </div>
+            <div class="user-menu">
+                <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}" alt="User" class="user-avatar">
+                <button onclick="toggleDropdown()" class="user-button">
+                    {{ user.fullname|default:'Dr. Admin' }} 
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="dropdown" id="dropdown">
+                    <a href="#" onclick="showProfileForm()">
+                        <span>👤</span> Show Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="content-container">
+          
+            <div class="view-section active" id="add-patient-view">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Add New Patient</h2>
+                        <p>Complete the form below to register a new patient</p>
+                    </div>
+                    <form id="addPatientForm" method="post" enctype="multipart/form-data" action="{% url 'add_patient' %}">
+                      {% csrf_token %}
+
+                      <!-- Profile Upload -->
+                      <div class="form-section">
+                          <div class="profile-upload-section">
+                              <div class="profile-preview">
+                                  <img id="patientPreview"
+                                      src="{% static 'img/default.png' %}"
+                                      alt="Patient">
+                                  <label for="patientImage" class="upload-btn">
+                                      📷 Upload Photo
+                                      <input type="file" id="patientImage" name="profile_image" accept="image/*" onchange="previewPatientImage(event)">
+                                  </label>
+                              </div>
+                          </div>
+                      </div>
+
+                      <!-- Patient Info -->
+                      <div class="form-grid">
+                          <div class="form-group">
+                              <label>Patient ID</label>
+                              <input type="text" name="patient_id" placeholder="System will generate automatically" readonly>
+                          </div>
+
+                          <div class="form-group">
+                              <label>First Name</label>
+                              <input type="text" name="firstname" placeholder="Enter first name" required>
+                          </div>
+                          <div class="form-group">
+                              <label>Middle Name</label>
+                              <input type="text" name="middlename" placeholder="Enter middle name">
+                          </div>
+                          <div class="form-group">
+                              <label>Last Name</label>
+                              <input type="text" name="lastname" placeholder="Enter last name" required>
+                          </div>
+
+                          <div class="form-group full-width">
+                              <label>Address</label>
+                              <input type="text" name="address" placeholder="Complete address" required>
+                          </div>
+
+                          <div class="form-group">
+                              <label>Birthdate</label>
+                              <input type="date" name="birthdate" required>
+                          </div>
+                          <div class="form-group">
+                              <label>Age</label>
+                              <input type="number" name="age" placeholder="Age" required>
+                          </div>
+
+                          <div class="form-group">
+                              <label>Gender</label>
+                              <select name="gender" required>
+                                  <option value="">Select gender</option>
+                                  <option value="Male">Male</option>
+                                  <option value="Female">Female</option>
+                                  <option value="Other">Other</option>
+                              </select>
+                          </div>
+
+                          <div class="form-group">
+                              <label>Contact Number</label>
+                              <input type="tel" name="contact_number" placeholder="09XX XXX XXXX" required>
+                          </div>
+
+                          <div class="form-group">
+                              <label>Blood Pressure</label>
+                              <input type="text" name="blood_pressure" placeholder="120/80 mmHg">
+                          </div>
+
+                          <div class="form-group">
+                              <label>Weight (kg)</label>
+                              <input type="number" step="0.1" name="weight" placeholder="kg">
+                          </div>
+
+                          <div class="form-group">
+                              <label>Height (cm)</label>
+                              <input type="number" step="0.1" name="height" placeholder="cm">
+                          </div>
+                      </div>
+
+                      <!-- Actions -->
+                      <div class="form-actions">
+                          <button type="submit" class="btn btn-primary">
+                              <span>💾</span> Add Patient
+                          </button>
+                          <button type="reset" class="btn btn-secondary">
+                              <span>🔄</span> Clear Form
+                          </button>
+                      </div>
+                  </form>
+
+                </div>
+            </div>
+
+            <div class="view-section" id="complaints-view">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>PATIENT/COMPLAINTS</h2>
+                        <p>Record patient complaints and medical observations</p>
+                    </div>
+                    <form id="complaintForm" method="post">
+                      {% csrf_token %}
+
+                      <!-- Patient Verification -->
+                      <div class="verification-section">
+                          <div class="form-group">
+                              <label>Patient ID (Verification Required)</label>
+                              <div class="input-with-button">
+                                  <input type="text" id="verifyPatientId" placeholder="Enter Patient ID (e.g., PT-20260001)">
+                                  <button type="button" onclick="verifyPatient()" class="btn btn-verify">
+                                      ✓ Verify
+                                  </button>
+                              </div>
+                          </div>
+                      </div>
+
+                      <!-- Patient Snapshot (readonly, auto-filled after verification) -->
+                      <div class="form-grid">
+                          <div class="form-group">
+                              <label>First Name</label>
+                              <input type="text" id="complaintFirstname" name="firstname" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label>Middle Name</label>
+                              <input type="text" id="complaintMiddlename" name="middlename" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label>Last Name</label>
+                              <input type="text" id="complaintLastname" name="lastname" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label>Address</label>
+                              <input type="text" id="complaintAddress" name="address" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label>Birthdate</label>
+                              <input type="date" id="complaintBirthdate" name="birthdate" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label>Age</label>
+                              <input type="number" id="complaintAge" name="age" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label>Gender</label>
+                              <input type="text" id="complaintGender" name="gender" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label>Contact Number</label>
+                              <input type="tel" id="complaintContact" name="contact_number" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label>Blood Pressure</label>
+                              <input type="text" id="complaintBP" name="blood_pressure" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label>Weight (kg)</label>
+                              <input type="number" step="0.1" id="complaintWeight" name="weight" readonly>
+                          </div>
+                          <div class="form-group">
+                              <label>Height (cm)</label>
+                              <input type="number" step="0.1" id="complaintHeight" name="height" readonly>
+                          </div>
+                      </div>
+
+                      <!-- Complaint Details -->
+                      <div class="form-grid">
+                          <div class="form-group full-width">
+                              <label>Chief Complaint</label>
+                              <textarea name="chief_complaint" rows="3" placeholder="Describe the main complaint..." required></textarea>
+                          </div>
+                          <div class="form-group full-width">
+                              <label>Lab / Examination</label>
+                              <textarea name="lab_examination" rows="3" placeholder="List lab tests or examinations..."></textarea>
+                          </div>
+                          <div class="form-group full-width">
+                              <label>Test Result</label>
+                              <textarea name="test_result" rows="3" placeholder="Enter test results..."></textarea>
+                          </div>
+                          <div class="form-group full-width">
+                              <label>Final Diagnosis</label>
+                              <textarea name="final_diagnosis" rows="3" placeholder="Enter final diagnosis..."></textarea>
+                          </div>
+                          <div class="form-group full-width">
+                              <label>Treatment</label>
+                              <textarea name="treatment" rows="3" placeholder="Enter treatment plan..."></textarea>
+                          </div>
+                      </div>
+
+                      <!-- Actions -->
+                      <div class="form-actions">
+                          <button type="submit" class="btn btn-primary">
+                              <span>💾</span> Submit Complaint
+                          </button>
+                          <button type="reset" class="btn btn-secondary" onclick="resetComplaintForm()">
+                              <span>🔄</span> Clear Form
+                          </button>
+                      </div>
+                  </form>
+
+                </div>
+            </div>
+
+            <div class="view-section" id="list-view">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Patient List</h2>
+                        <p>View and manage all registered patients</p>
+                    </div>
+
+                    <div class="table-controls">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="🔍 Search patients..." onkeyup="searchTable()">
+                        </div>
+                        <div class="entries-select">
+                            <label>Show</label>
+                            <select id="entriesSelect" onchange="changeEntries()">
+                                <option value="1">1</option>
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                            </select>
+                            <label>entries</label>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="patientTable">
+                          <thead>
+                              <tr>
+                                  <th>ID</th>
+                                  <th>Contact Number</th>
+                                  <th>Fullname</th>
+                                  <th>Birthdate</th>
+                                  <th>Age</th>
+                                  <th>Gender</th>
+                                  <th>Address</th>
+                                  <th>Blood Pressure</th>
+                                  <th>Weight</th>
+                                  <th>Height</th>
+                                  <th>Action</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {% for patient in patients %}
+                              <tr 
+                                    data-patient-id="{{ patient.patient_id }}"
+                                    data-firstname="{{ patient.firstname }}"
+                                    data-middlename="{{ patient.middlename|default:'' }}"
+                                    data-lastname="{{ patient.lastname }}"
+                                    data-birthdate="{{ patient.birthdate }}"
+                                    data-age="{{ patient.age }}"
+                                    data-gender="{{ patient.gender }}"
+                                    data-address="{{ patient.address }}"
+                                    data-contact-number="{{ patient.contact_number }}"
+                                    data-blood-pressure="{{ patient.blood_pressure }}"
+                                    data-weight="{{ patient.weight }}"
+                                    data-height="{{ patient.height }}"
+                                >
+                                    <td>{{ patient.patient_id }}</td>
+                                    <td>{{ patient.contact_number }}</td>
+                                    <td>{{ patient.firstname }} {{ patient.middlename|default:'' }} {{ patient.lastname }}</td>
+                                    <td>{{ patient.birthdate }}</td>
+                                    <td>{{ patient.age }}</td>
+                                    <td>{{ patient.gender }}</td>
+                                    <td>{{ patient.address }}</td>
+                                    <td>{{ patient.blood_pressure }}</td>
+                                    <td>{{ patient.weight }}</td>
+                                    <td>{{ patient.height }}</td>
+                                    <td class="action-buttons">
+                                        <button onclick="showComplaints('{{ patient.patient_id }}')" class="btn-action btn-info">📄 Complaints</button>
+                                        <button onclick="updatePatient('{{ patient.patient_id }}')" class="btn-action btn-edit">✏️ Update</button>
+                                    </td>
+                                </tr>
+                              {% endfor %}
+                          </tbody>
+                      </table>
+
+                    </div>
+
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            Showing <span id="showingStart">1</span> to <span id="showingEnd">10</span> of <span id="totalEntries">0</span> entries
+                        </div>
+                        <div class="pagination-controls">
+                            <button onclick="prevPage()" id="prevBtn" class="pagination-btn" disabled>
+                                ‹ Previous
+                            </button>
+                            <div id="pageNumbers" class="page-numbers"></div>
+                            <button onclick="nextPage()" id="nextBtn" class="pagination-btn">
+                                Next ›
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Profile</h2>
+                <button type="button" onclick="closeProfileForm()" class="close-btn">✖</button>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="profile-edit-section">
+                    <div class="profile-preview-large">
+                        <img id="profilePreview" src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'images/default-profile.png' %}{% endif %}" alt="Profile">
+                        <label for="profilePicture" class="upload-btn-large">
+                            📷 Change Photo
+                            <input type="file" id="profilePicture" name="profile_picture" accept="image/*" onchange="previewImage(event)">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" name="username" value="{{ user.username }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="fullname" value="{{ user.fullname|default:'' }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Password (leave blank to keep current)</label>
+                    <input type="password" name="password" placeholder="Enter new password">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <span>💾</span> Update Profile
+                    </button>
+                    <button type="button" onclick="closeProfileForm()" class="btn btn-secondary">
+                        <span>✖</span> Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="globalLoadingModal" class="loading-modal">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Processing... Please wait</p>
+        </div>
+    </div>
+
+    <style>
+    .loading-modal {
+        display: none; /* hidden by default */
+        position: fixed;
+        z-index: 9999;
+        left: 0; top: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
+    }
+    .loading-content {
+        background: #fff;
+        padding: 20px 40px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .spinner {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #007bff;
+        border-radius: 50%;
+        width: 40px; height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 10px;
+    }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+
+
+    <script src="{% static 'js/dash.js' %}"></script>
+</body>
+</html>
