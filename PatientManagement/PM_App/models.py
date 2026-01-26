@@ -45,11 +45,11 @@ class Patient(models.Model):
 
 class Complaint(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="complaints")
-    chief_complaint = models.TextField()  # e.g., "Chest pain and shortness of breath"
-    lab_examination = models.TextField(null=True, blank=True)  # e.g., "ECG, Chest X-Ray"
-    test_result = models.TextField(null=True, blank=True)  # e.g., "ECG shows arrhythmia, X-Ray normal"
-    final_diagnosis = models.TextField(null=True, blank=True)  # e.g., "Cardiac arrhythmia"
-    treatment = models.TextField(null=True, blank=True)  # e.g., "Medication, lifestyle modification"
+    chief_complaint = models.TextField()
+    lab_examination = models.TextField(null=True, blank=True)
+    test_result = models.TextField(null=True, blank=True) 
+    final_diagnosis = models.TextField(null=True, blank=True) 
+    treatment = models.TextField(null=True, blank=True) 
     date_created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

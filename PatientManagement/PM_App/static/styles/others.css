@@ -32,10 +32,6 @@
   transition: transform 0.2s ease;
 }
 
-.close-btn:hover {
-  transform: rotate(90deg);
-}
-
 .modal-content h3 {
   font-size: 1.8rem;
   font-weight: 700;
@@ -101,6 +97,51 @@
 
 .modal-content button:hover {
   background: #333;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background-color: transparent;
+  color: #ffffff;
+  position: relative;
+  top: 39px;
+  margin-bottom: 25px;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.logo-container h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.header-logo {
+  height: 48px;
+  width: auto;
+  border-radius: 6px;
+}
+
+@media (max-width: 768px) {
+  .logo-container {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .header-logo {
+    height: 60px;
+  }
+
+  .logo-container h2 {
+    font-size: 1.3rem;
+  }
 }
 
 @media (max-width: 768px) {

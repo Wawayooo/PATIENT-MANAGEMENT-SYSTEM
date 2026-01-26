@@ -15,8 +15,8 @@
     <div class="sidebar hidden" id="sidebar">
         <div class="sidebar-header">
             <div class="logo-container">
-                <div class="logo-icon">🏥</div>
-                <h2>Patient Portal</h2>
+                 <img src="{% static 'img/crown_med_asia_logo.png' %}" alt="Crown Med Asia Logo" class="header-logo">
+                <h2>Crown Med Asia</h2>
             </div>
         </div>
         <nav class="sidebar-nav">
@@ -73,7 +73,6 @@
                     <form id="addPatientForm" method="post" enctype="multipart/form-data" action="{% url 'add_patient' %}">
                       {% csrf_token %}
 
-                      <!-- Profile Upload -->
                       <div class="form-section">
                           <div class="profile-upload-section">
                               <div class="profile-preview">
@@ -88,7 +87,6 @@
                           </div>
                       </div>
 
-                      <!-- Patient Info -->
                       <div class="form-grid">
                           <div class="form-group">
                               <label>Patient ID</label>
@@ -153,7 +151,6 @@
                           </div>
                       </div>
 
-                      <!-- Actions -->
                       <div class="form-actions">
                           <button type="submit" class="btn btn-primary">
                               <span>💾</span> Add Patient
@@ -175,7 +172,6 @@
                     <form id="complaintForm" method="post">
                       {% csrf_token %}
 
-                      <!-- Patient Verification -->
                       <div class="verification-section">
                           <div class="form-group">
                               <label>Patient ID (Verification Required)</label>
@@ -188,7 +184,6 @@
                           </div>
                       </div>
 
-                      <!-- Patient Snapshot (readonly, auto-filled after verification) -->
                       <div class="form-grid">
                           <div class="form-group">
                               <label>First Name</label>
@@ -236,7 +231,6 @@
                           </div>
                       </div>
 
-                      <!-- Complaint Details -->
                       <div class="form-grid">
                           <div class="form-group full-width">
                               <label>Chief Complaint</label>
@@ -260,7 +254,6 @@
                           </div>
                       </div>
 
-                      <!-- Actions -->
                       <div class="form-actions">
                           <button type="submit" class="btn btn-primary">
                               <span>💾</span> Submit Complaint
@@ -274,7 +267,6 @@
                 </div>
             </div>
 
-            <!-- Complaints Modal -->
             <div id="complaintsModal" class="modal">
                 <div class="modal-content">
                 <span class="close-btn" onclick="closeComplaintsModal()">&times;</span>
@@ -285,7 +277,6 @@
                 </div>
             </div>
 
-                        <!-- Edit Complaint Modal -->
             <div id="editComplaintModal" class="modal">
                 <div class="modal-content">
                 <span class="close-btn" onclick="closeEditComplaintModal()">&times;</span>
@@ -395,7 +386,6 @@
                     <form id="updatePatientForm" enctype="multipart/form-data">
                     <input type="hidden" name="patient_id" id="modal_patient_id">
 
-                    <!-- Profile Image Preview -->
                     <div class="profile-image-box">
                         <img id="modal_profile_preview" src="/static/img/default.png" alt="Profile" class="profile-thumb-large">
                     </div>
@@ -442,7 +432,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Edit Profile</h2>
-                <button type="button" onclick="closeProfileForm()" class="close-btn">✖</button>
+                <button type="button" onclick="closeProfileForm()" class="close-btn" style="width: 15%;">✖</button>
             </div>
             <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -466,18 +456,19 @@
                     <input type="text" name="fullname" value="{{ user.fullname|default:'' }}" required>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 30px;">
                     <label>Password (leave blank to keep current)</label>
-                    <input type="password" name="password" placeholder="Enter new password">
+                    <input type="password" name="password" placeholder="Enter new password" style="border: solid 2px black">
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" id="updateProfileBtn" class="btn btn-primary">
                         <span>💾</span> Update Profile
                     </button>
-                    <button type="button" onclick="closeProfileForm()" class="btn btn-secondary">
+                    <button type="button" onclick="closeProfileForm()" class="btn btn-secondary" style="margin-bottom: 10px;">
                         <span>✖</span> Cancel
                     </button>
+                    <div class="form-info"> <span><strong>Note:</strong> If you change your username or password, you will be logged out and redirected to the login page.</span> </div>
                 </div>
             </form>
         </div>

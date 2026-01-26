@@ -1,0 +1,225 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #069494 0%, #006D6D 100%);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.login-container {
+  background: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(6, 148, 148, 0.3);
+  padding: 40px;
+  width: 100%;
+  max-width: 450px;
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.header-part {
+  text-align: center;
+  margin-bottom: 35px;
+  padding-bottom: 25px;
+  border-bottom: 2px solid #F5F5F5;
+}
+
+.header-part::before {
+  content: '';
+  font-size: 60px;
+  display: block;
+  margin-bottom: 15px;
+}
+
+.header-part::after {
+  content: 'Doctor Login Portal';
+  display: block;
+  font-size: 28px;
+  font-weight: 600;
+  color: #333333;
+  margin-top: 10px;
+}
+
+.error-message {
+  background: #FFE5E5;
+  color: #D32F2F;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  border-left: 4px solid #D32F2F;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333333;
+  letter-spacing: 0.3px;
+}
+
+.form-group input {
+  padding: 14px 16px;
+  font-size: 15px;
+  border: 2px solid #E0E0E0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  outline: none;
+  background: #F5F5F5;
+}
+
+.form-group input:focus {
+  border-color: #069494;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(6, 148, 148, 0.1);
+}
+
+.form-group input::placeholder {
+  color: #999999;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #069494 0%, #006D6D 100%);
+  color: #FFFFFF;
+  padding: 15px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(6, 148, 148, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.login-btn:hover {
+  background: linear-gradient(135deg, #40E0D0 0%, #069494 100%);
+  box-shadow: 0 6px 16px rgba(6, 148, 148, 0.4);
+  transform: translateY(-2px);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(6, 148, 148, 0.3);
+}
+
+.login-btn i {
+  margin-right: 8px;
+}
+
+.header-part {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 12px 20px;
+  background-color: #069494;
+  color: #ffffff;
+}
+
+.header-part h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.header-logo {
+  height: 40px;
+  width: auto;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .header-part {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .header-logo {
+    height: 50px;
+    margin-bottom: 8px;
+  }
+
+  .header-part h2 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    padding: 30px 25px;
+    max-width: 100%;
+  }
+
+  .header-part::after {
+    font-size: 24px;
+  }
+
+  .form-group input {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+
+  .login-btn {
+    padding: 13px 20px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 15px;
+  }
+
+  .login-container {
+    padding: 25px 20px;
+  }
+
+  .header-part::before {
+    font-size: 50px;
+  }
+
+  .header-part::after {
+    font-size: 22px;
+  }
+
+  .form-group label {
+    font-size: 13px;
+  }
+
+  .form-group input {
+    padding: 11px 13px;
+  }
+}

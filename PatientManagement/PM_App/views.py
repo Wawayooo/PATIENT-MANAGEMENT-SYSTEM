@@ -4,7 +4,7 @@ from django.shortcuts import render
 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth.hashers import make_password, check_password
 
 from django.shortcuts import render, redirect, get_object_or_404
 
@@ -30,7 +30,6 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-
 @login_required
 def dashboard_view(request):
     user = request.user
@@ -40,19 +39,32 @@ def dashboard_view(request):
         password = request.POST.get('password')
         profile_picture = request.FILES.get('profile_picture')
 
-        if username:
+        credentials_changed = False
+
+        if username and username != user.username:
             user.username = username
-        if fullname:
+            credentials_changed = True
+
+        if fullname and fullname != user.fullname:
             user.fullname = fullname
-        if password:
-            user.password = make_password(password)
+
+        if password and not check_password(password, user.password):
+            user.set_password(password)
+            credentials_changed = True
+
         if profile_picture:
             user.profile_picture = profile_picture
 
         user.save()
+
+        if credentials_changed:
+            logout(request)
+            return redirect('login')
+
         return redirect('dashboard')
 
     return render(request, 'dashboard.html', {'user': user})
+
 
 @login_required
 def verify_patient_api(request, patient_id):
@@ -84,7 +96,6 @@ def add_patient(request):
     if request.method == 'POST':
         patient_id = request.POST.get('patient_id')
 
-        # Update existing patient or create new
         patient, created = Patient.objects.update_or_create(
             patient_id=patient_id,
             defaults={
@@ -103,7 +114,6 @@ def add_patient(request):
             }
         )
 
-        # If AJAX request, return JSON
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({
                 'success': True,
@@ -124,11 +134,9 @@ def add_patient(request):
                 }
             })
 
-        # Normal redirect for non-AJAX
         return redirect('list_patients')
 
     else:
-        # Generate next patient ID
         last_patient = Patient.objects.order_by('-id').first()
         next_number = (last_patient.id + 1) if last_patient else 1
         next_id = f"PT-2026{str(next_number).zfill(4)}"
@@ -204,7 +212,6 @@ def update_patient(request):
     patient_id = request.POST.get("patient_id")
     patient = get_object_or_404(Patient, patient_id=patient_id)
 
-    # Update fields
     patient.firstname = request.POST.get("firstname")
     patient.middlename = request.POST.get("middlename")
     patient.lastname = request.POST.get("lastname")
@@ -214,7 +221,6 @@ def update_patient(request):
     patient.gender = request.POST.get("gender")
     patient.address = request.POST.get("address")
 
-    # Handle profile image upload
     if "profile_image" in request.FILES:
         patient.profile_image = request.FILES["profile_image"]
 
@@ -285,7 +291,7 @@ def get_complaints_json(request, patient_id):
             "final_diagnosis": c.final_diagnosis,
             "treatment": c.treatment,
             "date_created": c.date_created,
-            "is_archived": hasattr(c, "archive"),  # now works because of OneToOneField
+            "is_archived": hasattr(c, "archive"),
         })
 
     return JsonResponse({
@@ -319,7 +325,6 @@ def archive_complaint(request, complaint_id):
         complaint = get_object_or_404(Complaint, id=complaint_id)
         patient = complaint.patient
 
-        # Create snapshot
         PatientComplaintArchive.objects.create(
             complaint=complaint,
             patient_id=patient.patient_id,
@@ -374,9 +379,6 @@ def get_archived_complaints(request):
 @login_required
 @require_POST
 def delete_archived_complaint(request, archive_id):
-    """
-    Delete a specific archived complaint by its archive_id (primary key).
-    """
     archive = get_object_or_404(PatientComplaintArchive, pk=archive_id)
     archive.delete()
     return JsonResponse({

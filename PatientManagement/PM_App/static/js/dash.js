@@ -47,7 +47,6 @@ function deletePatient(patientId) {
         if (data.status === "success") {
             showNotification(data.message, "success");
 
-            // Remove row from table
             const row = document.querySelector(`tr[data-patient-id="${patientId}"]`);
             if (row) {
                 row.remove();
@@ -70,7 +69,7 @@ function loadPatientTable() {
         .then(res => res.json())
         .then(data => {
             const tbody = document.querySelector('#patientTable tbody');
-            tbody.innerHTML = ''; // clear old rows
+            tbody.innerHTML = '';
 
             data.patients.forEach(p => {
                 const tr = document.createElement('tr');
@@ -110,7 +109,6 @@ function loadPatientTable() {
                 tbody.appendChild(tr);
             });
 
-            // Initialize pagination or search if needed
             filteredData = Array.from(tbody.querySelectorAll('tr'));
             currentPage = 0;
             updatePagination();
@@ -130,7 +128,6 @@ function update_this_Patient(patientId) {
             return;
         }
 
-        // Populate modal fields
         document.getElementById("modal_patient_id").value = patient.patient_id;
         document.getElementById("modal_firstname").value = patient.firstname;
         document.getElementById("modal_middlename").value = patient.middlename || "";
@@ -141,10 +138,8 @@ function update_this_Patient(patientId) {
         document.getElementById("modal_gender").value = patient.gender;
         document.getElementById("modal_address").value = patient.address;
 
-        // Profile image preview
         document.getElementById("modal_profile_preview").src = patient.profile_image;
 
-        // Show modal
         document.getElementById("patientModal").style.display = "flex";
     })
     .catch(err => {
@@ -165,7 +160,7 @@ function previewProfileImage(event) {
 }
 
 function submitPatientUpdate() {
-    showLoading(); // show loading right away
+    showLoading();
     const form = document.getElementById("updatePatientForm");
     const formData = new FormData(form);
 
@@ -190,7 +185,7 @@ function submitPatientUpdate() {
         showNotification("Error updating patient", "error");
     })
     .finally(() => {
-        hideLoading(); // hide loading only after request completes
+        hideLoading();
     });
 }
 
@@ -198,8 +193,6 @@ function closePatientModal() {
     document.getElementById("patientModal").style.display = "none";
 }
 
-
-// Load table on page load
 document.addEventListener('DOMContentLoaded', loadPatientTable);
 
 function getCSRFToken() {
@@ -219,18 +212,15 @@ function toggleSidebar() {
 }
 
 function showView(viewName) {
-    // Hide all views
     document.querySelectorAll('.view-section').forEach(section => {
         section.classList.remove('active');
     });
     
-    // Show selected view
     const selectedView = document.getElementById(`${viewName}-view`);
     if (selectedView) {
         selectedView.classList.add('active');
     }
     
-    // Update active nav link
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
     });
@@ -239,7 +229,6 @@ function showView(viewName) {
         activeLink.classList.add('active');
     }
     
-    // Update page title
     const titles = {
         'add-patient': 'Dashboard',
         'complaints': 'Patient Complaints',
@@ -249,7 +238,6 @@ function showView(viewName) {
     
     document.getElementById('pageTitle').textContent = titles[viewName] || 'Dashboard';
     
-    // Close sidebar on mobile
     if (window.innerWidth <= 768) {
         const sidebar = document.getElementById('sidebar');
         const burger = document.querySelector('.burger');
@@ -257,7 +245,6 @@ function showView(viewName) {
         burger.textContent = '☰';
     }
     
-    // Initialize table if showing list view
     if (viewName === 'list') {
         initializeTable();
     }
@@ -345,7 +332,6 @@ function deleteArchived(archiveId) {
     .then(data => {
         if (data.status === "success") {
             showNotification(data.message, "success");
-            // Optionally refresh archived list
             showArchived();
         } else {
             showNotification(data.message, "error");
@@ -360,14 +346,11 @@ function deleteArchived(archiveId) {
     });
 }
 
-
-// ===== DROPDOWN FUNCTIONS =====
 function toggleDropdown() {
     const dropdown = document.getElementById('dropdown');
     dropdown.classList.toggle('show');
 }
 
-// Close dropdown when clicking outside
 document.addEventListener('click', function(e) {
     const dropdown = document.getElementById('dropdown');
     const userMenu = document.querySelector('.user-menu');
@@ -377,7 +360,37 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// ===== PROFILE FORM FUNCTIONS =====
+document.addEventListener("DOMContentLoaded", function() {
+    const updateBtn = document.getElementById("updateProfileBtn");
+    const form = document.querySelector("form");
+
+    if (updateBtn && form) {
+        updateBtn.addEventListener("click", function(event) {
+            const usernameField = document.querySelector('input[name="username"]');
+            const passwordField = document.querySelector('input[name="password"]');
+
+            const newUsername = usernameField.value.trim();
+            const newPassword = passwordField.value.trim();
+
+            const originalUsername = form.dataset.originalUsername || "";
+            const originalPassword = form.dataset.originalPassword || "";
+
+            const usernameChanged = newUsername !== originalUsername;
+            const passwordChanged = newPassword !== "" && newPassword !== originalPassword;
+
+            if (usernameChanged || passwordChanged) {
+                const confirmLogout = confirm(
+                    "Are you sure you want to update your profile?"
+                );
+
+                if (!confirmLogout) {
+                    event.preventDefault(); 
+                }
+            }
+        });
+    }
+});
+
 function showProfileForm() {
     const modal = document.getElementById('profileModal');
     modal.classList.add('show');
@@ -389,14 +402,12 @@ function closeProfileForm() {
     modal.classList.remove('show');
 }
 
-// Close modal when clicking outside
 document.getElementById('profileModal')?.addEventListener('click', function(e) {
     if (e.target === this) {
         closeProfileForm();
     }
 });
 
-// ===== IMAGE PREVIEW FUNCTIONS =====
 function previewImage(event) {
     const file = event.target.files[0];
     if (!file) return;
@@ -480,7 +491,6 @@ function resetComplaintForm() {
     if (img) img.src = '/static/img/default.png';
 }
 
-// ===== AJAX SUBMIT FOR COMPLAINT FORM =====
 document.getElementById('complaintForm').addEventListener('submit', function(e) {
     showLoading();
     e.preventDefault();
@@ -488,7 +498,6 @@ document.getElementById('complaintForm').addEventListener('submit', function(e) 
     const form = this;
     const formData = new FormData(form);
 
-    // Add the verified patient ID from the input
     const patientIdInput = document.getElementById('verifyPatientId');
     if (!patientIdInput.value.trim()) {
         showNotification('Please enter a Patient ID first', 'error');
@@ -515,7 +524,6 @@ document.getElementById('complaintForm').addEventListener('submit', function(e) 
         if (data.status === "success") {
             showNotification('Complaint recorded successfully!', 'success');
             
-            // Optional: reset form after submission
             form.reset();
 
             const previewImg = document.getElementById('complaintPatientPreview');
@@ -523,7 +531,6 @@ document.getElementById('complaintForm').addEventListener('submit', function(e) 
                 previewImg.src = '/static/images/default-avatar.png';
             }
             
-            // Refresh patient table
             loadPatientTable();
         } else {
             showNotification(data.error || 'Failed to save complaint', 'error');
@@ -539,18 +546,15 @@ document.getElementById('complaintForm').addEventListener('submit', function(e) 
 });
 
 function showNotification(message, type = 'info') {
-    // Remove existing notifications
     const existing = document.querySelector('.notification');
     if (existing) {
         existing.remove();
     }
     
-    // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
     
-    // Add styles
     Object.assign(notification.style, {
         position: 'fixed',
         top: '20px',
@@ -565,7 +569,6 @@ function showNotification(message, type = 'info') {
         maxWidth: '400px'
     });
     
-    // Set background color based on type
     const colors = {
         success: '#10b981',
         error: '#ef4444',
@@ -575,14 +578,12 @@ function showNotification(message, type = 'info') {
     
     document.body.appendChild(notification);
     
-    // Remove after 3 seconds
     setTimeout(() => {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
 }
 
-// ===== TABLE FUNCTIONS =====
 function initializeTable() {
     const table = document.getElementById('patientTable');
     if (!table) return;
@@ -590,10 +591,8 @@ function initializeTable() {
     const tbody = table.querySelector('tbody');
     const rows = Array.from(tbody.querySelectorAll('tr'));
     
-    // Store original data
     filteredData = rows;
     
-    // Update pagination
     updatePagination();
     displayTablePage();
 }
@@ -605,16 +604,13 @@ function searchTable() {
     const tbody = table.querySelector('tbody');
     const rows = Array.from(tbody.querySelectorAll('tr'));
     
-    // Filter rows
     filteredData = rows.filter(row => {
         const text = row.textContent.toLowerCase();
         return text.includes(searchTerm);
     });
     
-    // Reset to first page
     currentPage = 0;
     
-    // Update display
     updatePagination();
     displayTablePage();
 }
@@ -634,18 +630,15 @@ function displayTablePage() {
     
     const tbody = table.querySelector('tbody');
     
-    // Hide all rows
     const allRows = Array.from(tbody.querySelectorAll('tr'));
     allRows.forEach(row => row.style.display = 'none');
     
-    // Show current page rows
     const start = currentPage * entriesPerPage;
     const end = start + entriesPerPage;
     const pageRows = filteredData.slice(start, end);
     
     pageRows.forEach(row => row.style.display = '');
-    
-    // Update pagination info
+
     updatePaginationInfo();
 }
 
@@ -657,7 +650,6 @@ function updatePagination() {
     
     pageNumbers.innerHTML = '';
     
-    // Create page number buttons
     for (let i = 0; i < totalPages; i++) {
         const pageBtn = document.createElement('div');
         pageBtn.className = 'page-number';
@@ -692,7 +684,6 @@ function updatePaginationButtons() {
         nextBtn.disabled = currentPage >= totalPages - 1;
     }
     
-    // Update active page number
     document.querySelectorAll('.page-number').forEach((btn, index) => {
         btn.classList.toggle('active', index === currentPage);
     });
@@ -731,13 +722,13 @@ function nextPage() {
 
 function openComplaintsModal(patientId) {
     const modal = document.getElementById("complaintsModal");
-    modal.style.display = "block";   // show modal
-    showComplaints(patientId);       // load complaints for that patient
+    modal.style.display = "block";
+    showComplaints(patientId); 
 }
 
 function closeComplaintsModal() {
     const modal = document.getElementById("complaintsModal");
-    modal.style.display = "none";    // hide modal
+    modal.style.display = "none";
 }
 
 function showComplaints(patientId) {
@@ -752,7 +743,6 @@ function showComplaints(patientId) {
         const complaintsDiv = document.getElementById("complaintsContent");
         complaintsDiv.innerHTML = "";
     
-        // Show patient info once at top
         const patientInfo = `
             <h4>Patient: ${data.patient.firstname} ${data.patient.lastname} (${data.patient.patient_id})</h4>
             <p><em>Gender:</em> ${data.patient.gender}, <em>Age:</em> ${data.patient.age}</p>
@@ -814,10 +804,9 @@ function exportComplaintToPDF(complaintId) {
     })
     .then(res => {
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
-        return res.blob(); // PDF comes back as a blob
+        return res.blob();
     })
     .then(blob => {
-        // Create a temporary download link
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -896,7 +885,7 @@ function exportArchivedToPDF(archiveId) {
     })
     .then(res => {
         if (!res.ok) throw new Error(`Server error: ${res.status}`);
-        return res.blob(); // PDF comes back as a blob
+        return res.blob();
     })
     .then(blob => {
         const url = window.URL.createObjectURL(blob);
@@ -935,7 +924,6 @@ function deleteArchived(archiveId) {
     .then(data => {
         if (data.status === "success") {
             showNotification(data.message, "success");
-            // Refresh archived list
             showArchived();
         } else {
             showNotification(data.message || "Failed to delete archived complaint", "error");
@@ -950,7 +938,6 @@ function deleteArchived(archiveId) {
     });
 }
 
-// Optional: close modal when clicking outside
 window.onclick = function(event) {
     const modal = document.getElementById("complaintsModal");
     if (event.target === modal) {
@@ -958,7 +945,6 @@ window.onclick = function(event) {
     }
 }
 
-// Delete complaint
 function deleteComplaint(complaintId) {
     if (!confirm("Are you sure you want to delete this complaint?")) return;
 
@@ -973,7 +959,6 @@ function deleteComplaint(complaintId) {
     .then(data => {
         if (data.status === "success") {
             showNotification("Complaint deleted successfully!", "success");
-            // Refresh complaints list
             showComplaints(data.patient_id);
         } else {
             showNotification(data.error || "Failed to delete complaint", "error");
@@ -985,7 +970,6 @@ function deleteComplaint(complaintId) {
     });
 }
 
-// Edit complaint (loads into form)
 function editComplaint(complaintId) {
     fetch(`/complaints/${complaintId}/json/`, {
         method: "GET",
@@ -993,7 +977,6 @@ function editComplaint(complaintId) {
     })
     .then(res => res.json())
     .then(data => {
-        // Fill edit form fields with complaint data
         document.getElementById("edit_complaint_id").value = data.id;
         document.getElementById("edit_chief_complaint").value = data.chief_complaint || "";
         document.getElementById("edit_lab_examination").value = data.lab_examination || "";
@@ -1001,7 +984,6 @@ function editComplaint(complaintId) {
         document.getElementById("edit_final_diagnosis").value = data.final_diagnosis || "";
         document.getElementById("edit_treatment").value = data.treatment || "";
 
-        // Show modal
         document.getElementById("editComplaintModal").style.display = "block";
         showNotification("Editing complaint record", "info");
     })
@@ -1034,7 +1016,6 @@ document.getElementById("editComplaintForm").addEventListener("submit", function
         if (data.status === "success") {
             showNotification("Complaint updated successfully!", "success");
             closeEditComplaintModal();
-            // Refresh complaints list for the patient
             showComplaints(data.patient_id);
         } else {
             showNotification(data.error || "Failed to update complaint", "error");
@@ -1049,22 +1030,18 @@ document.getElementById("editComplaintForm").addEventListener("submit", function
     });
 });
 
-// Export complaints to PDF
 function exportComplaintsToPDF() {
     window.location.href = "/export/complaints/pdf/";
 }
 
-// ===== UPDATE PATIENT FORM =====
 function updatePatient(patientId) {
-    showView('add-patient'); // Switch to Add Patient view
+    showView('add-patient');
 
-    // Find row by patient ID using data attributes
     const row = document.querySelector(`#patientTable tbody tr[data-patient-id="${patientId}"]`);
     if (!row) return;
 
     const form = document.getElementById('addPatientForm');
 
-    // Fill the form using dataset
     form.profile_image.value = row.dataset.profileImage;
     form.patient_id.value = row.dataset.patientId;
     form.firstname.value = row.dataset.firstname;
@@ -1079,7 +1056,6 @@ function updatePatient(patientId) {
     form.weight.value = row.dataset.weight;
     form.height.value = row.dataset.height;
 
-    // Update profile preview
     const preview = document.getElementById('patientPreview');
     if (preview && row.dataset.profileImage) {
         preview.src = row.dataset.profileImage;
@@ -1088,7 +1064,6 @@ function updatePatient(patientId) {
     showNotification('Editing patient record', 'info');
 }
 
-// ===== AJAX FORM SUBMIT =====
 document.getElementById('addPatientForm').addEventListener('submit', function(e) {
     showLoading();
 
@@ -1113,11 +1088,9 @@ document.getElementById('addPatientForm').addEventListener('submit', function(e)
             const patient = data.patient;
             const tableBody = document.querySelector('#patientTable tbody');
 
-            // Check if patient already exists in table
             let row = tableBody.querySelector(`tr[data-patient-id="${patient.patient_id}"]`);
 
             if (row) {
-                // Update existing row
                 row.dataset.firstname = patient.firstname;
                 row.dataset.middlename = patient.middlename;
                 row.dataset.lastname = patient.lastname;
@@ -1148,7 +1121,6 @@ document.getElementById('addPatientForm').addEventListener('submit', function(e)
                     </td>
                 `;
             } else {
-                // Add new row
                 const newRow = document.createElement('tr');
                 newRow.dataset.patientId = patient.patient_id;
                 newRow.dataset.firstname = patient.firstname;
@@ -1183,7 +1155,6 @@ document.getElementById('addPatientForm').addEventListener('submit', function(e)
                 tableBody.appendChild(newRow);
             }
 
-            // Reset form
             form.reset();
             document.getElementById('patientPreview').src = '/static/img/default.png';
             hideLoading();
@@ -1209,23 +1180,17 @@ function handleResize() {
 
 window.addEventListener('resize', handleResize);
 
-// ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize table if on list view
     initializeTable();
     
-    // Set initial responsive state
     handleResize();
     
-    // Add keyboard shortcuts
     document.addEventListener('keydown', function(e) {
-        // Escape key closes modals
         if (e.key === 'Escape') {
             closeProfileForm();
         }
     });
     
-    // Smooth scroll behavior
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
             e.preventDefault();
@@ -1236,7 +1201,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Add loading animation to forms
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
         form.addEventListener('submit', function(e) {
@@ -1246,7 +1210,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.innerHTML = '<span>⏳</span> Processing...';
                 showLoading();
                 
-                // Re-enable after 2 seconds (for demo purposes)
                 setTimeout(() => {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<span>💾</span> Submit';
@@ -1259,7 +1222,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Dashboard initialized successfully');
 });
 
-// ===== UTILITY FUNCTIONS =====
 function formatDate(dateString) {
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
     return new Date(dateString).toLocaleDateString('en-US', options);
@@ -1278,7 +1240,6 @@ function calculateAge(birthdate) {
     return age;
 }
 
-// Auto-calculate age from birthdate
 const birthdateInputs = document.querySelectorAll('input[name="birthdate"]');
 birthdateInputs.forEach(input => {
     input.addEventListener('change', function() {
@@ -1290,7 +1251,6 @@ birthdateInputs.forEach(input => {
     });
 });
 
-// Add CSS animations dynamically
 const style = document.createElement('style');
 style.textContent = `
     @keyframes slideIn {

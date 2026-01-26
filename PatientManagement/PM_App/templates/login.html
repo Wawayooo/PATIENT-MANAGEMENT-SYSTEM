@@ -1,91 +1,17 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Doctor Login</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #4CAF50, #2E7D32);
-            height: 100vh;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .login-container {
-            background: #fff;
-            padding: 40px 30px;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-            width: 350px;
-            text-align: center;
-        }
-
-        .login-container h2 {
-            margin-bottom: 25px;
-            color: #2E7D32;
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 6px;
-            color: #333;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-
-        .form-group input:focus {
-            border-color: #4CAF50;
-            outline: none;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 12px;
-            background: #4CAF50;
-            border: none;
-            border-radius: 6px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .login-btn:hover {
-            background: #43A047;
-        }
-
-        .login-btn i {
-            margin-right: 8px;
-        }
-
-        .error-message {
-            color: red;
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'styles/login.css' %}">
 </head>
 <body>
     <div class="login-container">
-        <h2>Doctor Login</h2>
+        <div class="header-part">
+            <img src="{% static 'img/crown_med_asia_logo.png' %}" alt="Crown Med Asia Logo" class="header-logo">
+            <h2>Crown Med Asia</h2>
+        </div>
 
         {% if error %}
             <p class="error-message">{{ error }}</p>
@@ -109,7 +35,6 @@
         </form>
     </div>
 
-    <!-- Font Awesome for login icon -->
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </body>
 </html>
