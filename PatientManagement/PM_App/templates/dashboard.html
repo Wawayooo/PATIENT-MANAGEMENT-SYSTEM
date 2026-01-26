@@ -267,43 +267,6 @@
                 </div>
             </div>
 
-            <div id="complaintsModal" class="modal">
-                <div class="modal-content">
-                <span class="close-btn" onclick="closeComplaintsModal()">&times;</span>
-                <h3>Patient Complaints</h3>
-                <div id="complaintsContent">
-                    <p>Select a patient to view complaints.</p>
-                </div>
-                </div>
-            </div>
-
-            <div id="editComplaintModal" class="modal">
-                <div class="modal-content">
-                <span class="close-btn" onclick="closeEditComplaintModal()">&times;</span>
-                <h3>Edit Complaint</h3>
-                <form id="editComplaintForm">
-                    <input type="hidden" name="complaint_id" id="edit_complaint_id">
-            
-                    <label for="edit_chief_complaint">Chief Complaint</label>
-                    <textarea id="edit_chief_complaint" name="chief_complaint" required></textarea>
-            
-                    <label for="edit_lab_examination">Lab Examination</label>
-                    <textarea id="edit_lab_examination" name="lab_examination"></textarea>
-            
-                    <label for="edit_test_result">Test Result</label>
-                    <textarea id="edit_test_result" name="test_result"></textarea>
-            
-                    <label for="edit_final_diagnosis">Final Diagnosis</label>
-                    <textarea id="edit_final_diagnosis" name="final_diagnosis"></textarea>
-            
-                    <label for="edit_treatment">Treatment</label>
-                    <textarea id="edit_treatment" name="treatment"></textarea>
-            
-                    <button type="submit" class="btn-action btn-edit">💾 Save Changes</button>
-                </form>
-                </div>
-            </div>
-
             <div class="view-section" id="list-view">
                 <div class="card">
                     <div class="card-header">
@@ -329,17 +292,17 @@
                         <table id="patientTable">
                           <thead>
                               <tr>
-                                  <th>ID</th>
-                                  <th>Contact Number</th>
-                                  <th>Fullname</th>
-                                  <th>Birthdate</th>
-                                  <th>Age</th>
-                                  <th>Gender</th>
-                                  <th>Address</th>
-                                  <th>Blood Pressure</th>
-                                  <th>Weight</th>
-                                  <th>Height</th>
-                                  <th>Action</th>
+                                  <th style="border: solid;">ID</th>
+                                  <th style="border: solid;">Contact Number</th>
+                                  <th style="border: solid;">Fullname</th>
+                                  <th style="border: solid;">Birthdate</th>
+                                  <th style="border: solid;">Age</th>
+                                  <th style="border: solid;">Gender</th>
+                                  <th style="border: solid;">Address</th>
+                                  <th style="border: solid;">Blood Pressure</th>
+                                  <th style="border: solid;">Weight</th>
+                                  <th style="border: solid;">Height</th>
+                                  <th id="action_id">Action</th>
                               </tr>
                           </thead>
                           <tbody>
@@ -427,6 +390,42 @@
         </div>
     </div>
 
+    <div id="complaintsModal" class="modal-overlay">
+        <div class="modal-content">
+        <span class="close-btn" onclick="closeComplaintsModal()">&times;</span>
+        <h3>Patient Complaints</h3>
+        <div id="complaintsContent">
+            <p>Select a patient to view complaints.</p>
+        </div>
+        </div>
+    </div>
+
+    <div id="editComplaintModal" class="modal">
+        <div class="modal-content">
+        <span class="close-btn" onclick="closeEditComplaintModal()">&times;</span>
+        <h3>Edit Complaint</h3>
+        <form id="editComplaintForm">
+            <input type="hidden" name="complaint_id" id="edit_complaint_id">
+    
+            <label for="edit_chief_complaint">Chief Complaint</label>
+            <textarea id="edit_chief_complaint" name="chief_complaint" required></textarea>
+    
+            <label for="edit_lab_examination">Lab Examination</label>
+            <textarea id="edit_lab_examination" name="lab_examination"></textarea>
+    
+            <label for="edit_test_result">Test Result</label>
+            <textarea id="edit_test_result" name="test_result"></textarea>
+    
+            <label for="edit_final_diagnosis">Final Diagnosis</label>
+            <textarea id="edit_final_diagnosis" name="final_diagnosis"></textarea>
+    
+            <label for="edit_treatment">Treatment</label>
+            <textarea id="edit_treatment" name="treatment"></textarea>
+    
+            <button type="submit" class="btn-action btn-edit">💾 Save Changes</button>
+        </form>
+        </div>
+    </div>
 
     <div class="modal-overlay" id="profileModal">
         <div class="modal-content">
@@ -468,7 +467,7 @@
                     <button type="button" onclick="closeProfileForm()" class="btn btn-secondary" style="margin-bottom: 10px;">
                         <span>✖</span> Cancel
                     </button>
-                    <div class="form-info"> <span><strong>Note:</strong> If you change your username or password, you will be logged out and redirected to the login page.</span> </div>
+                    <div class="form-info"> <span><strong>Note:</strong> If you change your username or password, you will be logged out and redirected to the login page for Security.</span> </div>
                 </div>
             </form>
         </div>
