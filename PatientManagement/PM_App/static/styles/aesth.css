@@ -8,6 +8,15 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   max-width: 400px;
   border: solid 3px black;
+  max-height: 600px;
+  display: flex;
+  flex-wrap: wrap;
+  overflow: auto;
+}
+
+.btn-delete {
+  background-color: red;
+  color: white;
 }
 
 .patient_card {
@@ -151,7 +160,7 @@
   }
 
   #patientTable td {
-    display: flex;
+    display: block;
     font-size: 12px;
     padding: 4px 0;
   }
