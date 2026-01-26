@@ -289,12 +289,13 @@ function showArchived() {
                         </div>
                     </div>
                     <div class="complaint-card">
-                        <strong>COMPLAINT: ${a.chief_complaint}</strong><br>
-                        <em>Lab:</em> ${a.lab_examination || "N/A"}<br>
-                        <em>Result:</em> ${a.test_result || "N/A"}<br>
-                        <em>Diagnosis:</em> ${a.final_diagnosis || "N/A"}<br>
-                        <em>Treatment:</em> ${a.treatment || "N/A"}<br>
-                        <small>Archived On: ${new Date(a.date_created).toLocaleString()}</small><br>
+                        <p>COMPLAINT: <strong style="color:#008080;">${a.chief_complaint}</strong></p>
+                        <p>Lab: <strong style="color:#008080;">${a.lab_examination || "N/A"}</strong></p>
+                        <p>Result: <strong style="color:#008080;">${a.test_result || "N/A"}</strong></p>
+                        <p>Diagnosis: <strong style="color:#008080;">${a.final_diagnosis || "N/A"}</strong></p>
+                        <p>Treatment: <strong style="color:#008080;">${a.treatment || "N/A"}</strong></p>
+                        <p>Archived On: <strong style="color:#008080;">${new Date(a.date_created).toLocaleString()}</strong></p>
+                        
                         <div class="action-btn">
                             <button onclick="exportArchivedToPDF(${a.id})" class="btn-action btn-info">📄 Export to PDF</button>
                             <button onclick="deleteArchived(${a.id})" class="btn-action btn-danger">🗑️ Delete</button>
@@ -722,7 +723,7 @@ function nextPage() {
 
 function openComplaintsModal(patientId) {
     const modal = document.getElementById("complaintsModal");
-    modal.style.display = "block";
+    modal.style.display = "flex";
     showComplaints(patientId); 
 }
 
@@ -768,16 +769,37 @@ function showComplaints(patientId) {
                 }
                 
                 item.innerHTML = `
-                    <strong>${c.chief_complaint}</strong><br>
-                    <em>Lab:</em> ${c.lab_examination || "N/A"}<br>
-                    <em>Result:</em> ${c.test_result || "N/A"}<br>
-                    <em>Diagnosis:</em> ${c.final_diagnosis || "N/A"}<br>
-                    <em>Treatment:</em> ${c.treatment || "N/A"}<br>
-                    <small>Date: ${new Date(c.date_created).toLocaleString()}</small><br>
-                    <button onclick="editComplaint(${c.id})" class="btn-action btn-edit">✏️ Edit</button>
-                    <button onclick="deleteComplaint(${c.id})" class="btn-action btn-delete">🗑️ Delete</button>
-                    ${actionButton}
+                    <p style="margin:6px 0; font-size:1rem; color:#222;">
+                        Complaint: <strong style="color:#000;">${c.chief_complaint}</strong>
+                    </p>
+                    <p style="margin:6px 0; font-size:0.95rem; color:#444;">
+                        Lab: <strong style="color:#000;">${c.lab_examination || "N/A"}</strong>
+                    </p>
+                    <p style="margin:6px 0; font-size:0.95rem; color:#444;">
+                        Result: <strong style="color:#000;">${c.test_result || "N/A"}</strong>
+                    </p>
+                    <p style="margin:6px 0; font-size:0.95rem; color:#444;">
+                        Diagnosis: <strong style="color:#000;">${c.final_diagnosis || "N/A"}</strong>
+                    </p>
+                    <p style="margin:6px 0; font-size:0.95rem; color:#444;">
+                        Treatment: <strong style="color:#000;">${c.treatment || "N/A"}</strong>
+                    </p>
+                    <p style="margin:6px 0; font-size:0.85rem; color:#666;">
+                        Date: <strong style="color:#000;">${new Date(c.date_created).toLocaleString()}</strong>
+                    </p>
+                    <div style="margin-top:8px; display: flex; flex-wrap: wrap; justify-content: center;">
+                        <button onclick="editComplaint(${c.id})" 
+                            style="background:#ffc107; color:#333; border:none; border-radius:4px; padding:6px 12px; margin-right:6px; cursor:pointer; width: 45%;">
+                            ✏️ Edit
+                        </button>
+                        <button onclick="deleteComplaint(${c.id})" 
+                            style="background:#dc3545; color:#fff; border:none; border-radius:4px; padding:6px 12px; margin-right:6px; cursor:pointer; width: 45%;">
+                            🗑️ Delete
+                        </button>
+                        ${actionButton}
+                    </div>
                 `;
+
                 list.appendChild(item);
             });
             
@@ -984,7 +1006,7 @@ function editComplaint(complaintId) {
         document.getElementById("edit_final_diagnosis").value = data.final_diagnosis || "";
         document.getElementById("edit_treatment").value = data.treatment || "";
 
-        document.getElementById("editComplaintModal").style.display = "block";
+        document.getElementById("editComplaintModal").style.display = "flex";
         showNotification("Editing complaint record", "info");
     })
     .catch(err => {
